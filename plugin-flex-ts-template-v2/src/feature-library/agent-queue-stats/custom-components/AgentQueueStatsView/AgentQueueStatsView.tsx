@@ -20,6 +20,8 @@ const StyledDataTable = styled(DataTable)`
 
 // Queue SIDs for each LOB — sourced from the original plugin
 const KEYS_INVISALIGN = [
+  'WQa9847559139e285b2b4ed53c4df3ca30',
+  'WQ281ec3ef9538eaf431dfbe18ab049999',
   'WQ01480077ddceba12ff8b2a91a622719c',
   'WQc59c01182fa53804fc2f72f33f0050ee',
   'WQ27d28b3db82e3ed9e8626b23844de737',
@@ -45,6 +47,7 @@ const KEYS_INVISALIGN = [
 ];
 
 const KEYS_ITERO = [
+  'WQ281ec3ef9538eaf431dfbe18ab049999',
   'WQ03d68cf7a3d60d04703f55a6ca5d5e19',
   'WQ5458e070fa178c5a2dae35746731bd4b',
   'WQb14f247badc5b05b91dd630365774da9',
