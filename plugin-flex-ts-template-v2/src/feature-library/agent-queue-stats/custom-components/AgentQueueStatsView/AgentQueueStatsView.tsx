@@ -103,14 +103,14 @@ const AgentQueueStatsView = () => {
       .catch((err) => console.error('[agent-queue-stats] Failed to fetch agent queues:', err));
   }, [isAgent]);
 
-  const keysToFilter =
-    filterValue === 'Invisalign'
-      ? KEYS_INVISALIGN
-      : filterValue === 'iTero'
-        ? KEYS_ITERO
-        : [...KEYS_INVISALIGN, ...KEYS_ITERO];
+  console.log(`[agent-queue-stats] AgentQueueStatsView render: ${stats.length} queues in Redux, filter="${filterValue}"`);
 
-  const filteredStats = stats.filter((q) => keysToFilter.includes(q.queue.queue_sid));
+  const filteredStats =
+    filterValue === 'Invisalign'
+      ? stats.filter((q) => KEYS_INVISALIGN.includes(q.queue.queue_sid))
+      : filterValue === 'iTero'
+        ? stats.filter((q) => KEYS_ITERO.includes(q.queue.queue_sid))
+        : stats;
 
   return (
     <Wrapper>

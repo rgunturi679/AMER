@@ -67,6 +67,7 @@ export class StatsHelper {
   constructor(manager: Flex.Manager) {
     this.mapCache = {};
     this.manager = manager;
+    console.log('[agent-queue-stats] StatsHelper: initializing, opening tr-queue LiveQuery');
 
     this.queuesHelper = new QueuesHelper(
       async (items: { [key: string]: AgentQueue }) => {
@@ -84,10 +85,16 @@ export class StatsHelper {
   async fetchQueueStats(queue: AgentQueue): Promise<QueueStats | null> {
     if (this.mapCache[queue.queue_sid]) return null;
 
-    this.mapCache[queue.queue_sid] = await this.manager.insightsClient.map({
-      id: `${queue.queue_sid}.realtime_statistics.v1`,
-      mode: 'open_existing',
-    });
+    console.log(`[agent-queue-stats] fetchQueueStats: opening SyncMap for "${queue.queue_name}" (${queue.queue_sid})`);
+    try {
+      this.mapCache[queue.queue_sid] = await this.manager.insightsClient.map({
+        id: `${queue.queue_sid}.realtime_statistics.v1`,
+        mode: 'open_existing',
+      });
+    } catch (err) {
+      console.error(`[agent-queue-stats] fetchQueueStats: failed to open SyncMap for "${queue.queue_name}"`, err);
+      return null;
+    }
 
     const queueStatsMap = this.mapCache[queue.queue_sid];
 
@@ -100,6 +107,7 @@ export class StatsHelper {
 
     let stats: QueueStats = { queue };
     const mapItems = await queueStatsMap.getItems();
+    console.log(`[agent-queue-stats] fetchQueueStats: got ${mapItems.items.length} items for "${queue.queue_name}"`);
     mapItems.items.forEach((item) => {
       stats = this.updateStatsItem(item, stats);
     });
@@ -108,6 +116,9 @@ export class StatsHelper {
   }
 
   async onQueuesLoaded(items: { [key: string]: AgentQueue }) {
+    const queueCount = Object.keys(items).length;
+    console.log(`[agent-queue-stats] onQueuesLoaded: LiveQuery returned ${queueCount} queues`);
+
     const allStats: QueueStats[] = [];
 
     for (const queueSid in items) {
@@ -115,6 +126,7 @@ export class StatsHelper {
       if (stats) allStats.push(stats);
     }
 
+    console.log(`[agent-queue-stats] onQueuesLoaded: dispatching ${allStats.length} queue stats to Redux`);
     this.manager.store.dispatch(updateStats(allStats));
   }
 
