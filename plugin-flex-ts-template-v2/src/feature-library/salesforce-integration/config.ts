@@ -8,7 +8,7 @@ const {
   copilot_notes = false,
   hide_crm_container = false,
   prevent_popout_during_call = false,
-  screen_pop = false,
+  screen_pop = true,
   show_panel_automatically = false,
   utility_bar_status = false,
 } = (getFeatureFlags()?.features?.salesforce_integration as SalesforceIntegrationConfig) || {};

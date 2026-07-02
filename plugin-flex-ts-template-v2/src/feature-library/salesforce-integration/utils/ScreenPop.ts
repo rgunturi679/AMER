@@ -17,7 +17,7 @@ export const screenPop = (task: ITask) => {
   }
 
   // Handle single match record ID passed from task attributes - set via Studio flow
-  const sfdcObjectId = task.attributes.sfdcObjectId && task.attributes.sfdcObjectId.trim();
+  const sfdcObjectId = task.attributes.sfdc_id && task.attributes.sfdc_id.trim();
   if (sfdcObjectId) {
     logger.log(`[salesforce-integration] Performing screen pop of record ${sfdcObjectId} for task ${task.taskSid}`);
     getOpenCti().screenPop({
