@@ -440,11 +440,15 @@
         "activity_logging": false,
         "click_to_dial": false,
         "copilot_notes": false,
-        "hide_crm_container":false,
+        "hide_crm_container": false,
         "prevent_popout_during_call": false,
         "screen_pop": true,
         "show_panel_automatically": false,
         "utility_bar_status": false
+      },
+      "agent_queue_stats": {
+        "enabled": true,
+        "serverless_function_url": ""
       }
     }
   }
