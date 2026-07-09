@@ -43,12 +43,17 @@ export default abstract class LiveQueryHelper<T> {
   }
 
   #initLiveQuery = async (): Promise<LiveQuery> => {
+    console.log(`[agent-queue-stats] LiveQueryHelper: calling liveQuery("${this.indexName}", "${this.queryExpression}")`);
     try {
       this.#liveQuery = await this.manager.insightsClient.liveQuery(this.indexName, this.queryExpression);
+      console.log(`[agent-queue-stats] LiveQueryHelper: liveQuery resolved for "${this.indexName}"`);
       this.#items = this.#liveQuery.getItems() as unknown as { [key: string]: T };
+      const itemCount = Object.keys(this.#items || {}).length;
+      console.log(`[agent-queue-stats] LiveQueryHelper: getItems() returned ${itemCount} items for "${this.indexName}"`);
       this.#liveQuery.on('itemUpdated', this.#onItemUpdated.bind(this));
       return this.#liveQuery;
     } catch (e) {
+      console.error(`[agent-queue-stats] LiveQueryHelper: liveQuery FAILED for "${this.indexName}"`, e);
       if (this.#liveQuery) {
         this.#liveQuery.close();
         this.#liveQuery = undefined;

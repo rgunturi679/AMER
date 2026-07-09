@@ -67,7 +67,9 @@ export class StatsHelper {
   constructor(manager: Flex.Manager) {
     this.mapCache = {};
     this.manager = manager;
+    const ic = manager.insightsClient as any;
     console.log('[agent-queue-stats] StatsHelper: initializing, opening tr-queue LiveQuery');
+    console.log('[agent-queue-stats] StatsHelper: insightsClient connectionState at StatsHelper init=', ic?.connectionState);
 
     this.queuesHelper = new QueuesHelper(
       async (items: { [key: string]: AgentQueue }) => {
@@ -83,7 +85,10 @@ export class StatsHelper {
   }
 
   async fetchQueueStats(queue: AgentQueue): Promise<QueueStats | null> {
-    if (this.mapCache[queue.queue_sid]) return null;
+    if (this.mapCache[queue.queue_sid]) {
+      console.log(`[agent-queue-stats] fetchQueueStats: cache hit for "${queue.queue_name}", skipping`);
+      return null;
+    }
 
     console.log(`[agent-queue-stats] fetchQueueStats: opening SyncMap for "${queue.queue_name}" (${queue.queue_sid})`);
     try {
@@ -91,8 +96,9 @@ export class StatsHelper {
         id: `${queue.queue_sid}.realtime_statistics.v1`,
         mode: 'open_existing',
       });
+      console.log(`[agent-queue-stats] fetchQueueStats: SyncMap opened for "${queue.queue_name}"`);
     } catch (err) {
-      console.error(`[agent-queue-stats] fetchQueueStats: failed to open SyncMap for "${queue.queue_name}"`, err);
+      console.error(`[agent-queue-stats] fetchQueueStats: failed to open SyncMap for "${queue.queue_name}" (${queue.queue_sid})`, err);
       return null;
     }
 
