@@ -1,15 +1,12 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
-
 import { QueueStats } from '../../utils/StatsHelper';
 
 export interface AgentQueueStatsState {
   stats: QueueStats[];
 }
 
-const initialState: AgentQueueStatsState = {
-  stats: [],
-};
+const initialState: AgentQueueStatsState = { stats: [] };
 
 const agentQueueStatsSlice = createSlice({
   name: 'agentQueueStats',
@@ -29,5 +26,4 @@ const agentQueueStatsSlice = createSlice({
 });
 
 export const { updateStats } = agentQueueStatsSlice.actions;
-
 export const reducerHook = () => ({ agentQueueStats: agentQueueStatsSlice.reducer });

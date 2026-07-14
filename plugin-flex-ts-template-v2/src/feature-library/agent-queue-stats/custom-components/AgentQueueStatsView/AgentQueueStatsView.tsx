@@ -18,16 +18,14 @@ const StyledDataTable = styled(DataTable)`
   }
 `;
 
-// Queue SIDs for each LOB — sourced from the original plugin
 const KEYS_INVISALIGN = [
   'WQa9847559139e285b2b4ed53c4df3ca30',
-  'WQ1d0435d76a8c93e2bc00329c756bd8a6'
+  'WQ1d0435d76a8c93e2bc00329c756bd8a6',
 ];
 
 const KEYS_ITERO = [
   'WQe73899d1c0fdb49188d2665d92268cf1',
   'WQa49512ff496d7eb066ff6e842a9f5c78',
-
 ];
 
 const AgentQueueStatsView = () => {
@@ -48,11 +46,9 @@ const AgentQueueStatsView = () => {
 
   useEffect(() => {
     if (!isAgent) return;
-
     const workerSid = (manager as any).workerClient?.sid;
     const workspaceSid = manager.serviceConfiguration?.taskrouter_workspace_sid;
     const functionUrl = getServerlessFunctionUrl();
-
     if (!workerSid || !workspaceSid || !functionUrl) return;
 
     fetch(functionUrl, {
@@ -67,8 +63,6 @@ const AgentQueueStatsView = () => {
       .then((data) => setAgentAssignedQueueSids(data.queueSids || []))
       .catch((err) => console.error('[agent-queue-stats] Failed to fetch agent queues:', err));
   }, [isAgent]);
-
-  console.log(`[agent-queue-stats] AgentQueueStatsView render: ${stats.length} queues in Redux, filter="${filterValue}"`);
 
   const filteredStats =
     filterValue === 'Invisalign'
@@ -92,7 +86,6 @@ const AgentQueueStatsView = () => {
           <MenuItem value="iTero">iTero</MenuItem>
         </TextField>
       </div>
-
       <StyledDataTable items={filteredStats} defaultSortColumn="name-column">
         <ColumnDefinition
           key="name-column"
