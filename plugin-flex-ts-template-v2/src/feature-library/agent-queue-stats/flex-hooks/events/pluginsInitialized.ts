@@ -11,7 +11,16 @@ export const eventHook = function initAgentQueueStatsHelper(_flex: typeof Flex, 
   if (ic?.connectionState === 'connected') {
     console.log('[agent-queue-stats] pluginsInitialized: already connected, starting StatsHelper');
     new StatsHelper(manager);
-  } else {
-    console.log('[agent-queue-stats] pluginsInitialized: insightsClient not ready, will start on tokenUpdated');
+    return;
   }
+
+  console.log('[agent-queue-stats] pluginsInitialized: insightsClient not ready, registering connectionStateChanged listener');
+  const onStateChanged = (state: string) => {
+    console.log('[agent-queue-stats] connectionStateChanged:', state);
+    if (state === 'connected') {
+      ic.removeListener('connectionStateChanged', onStateChanged);
+      new StatsHelper(manager);
+    }
+  };
+  ic.on('connectionStateChanged', onStateChanged);
 };
