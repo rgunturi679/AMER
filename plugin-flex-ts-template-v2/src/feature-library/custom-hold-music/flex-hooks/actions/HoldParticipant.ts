@@ -9,7 +9,8 @@ export const actionEvent = FlexActionEvent.before;
 export const actionName = FlexAction.HoldParticipant;
 export const actionHook = function setHoldMusicBeforeHoldParticipant(flex: typeof Flex, _manager: Flex.Manager) {
   flex.Actions.addListener(`${actionEvent}${actionName}`, async (payload, abortFunction) => {
-    payload.holdMusicUrl = getHoldMusicUrl();
+    const queueSid = payload?.task?.queueSid;
+    payload.holdMusicUrl = getHoldMusicUrl(queueSid);
 
     if (!payload.targetSid || !payload.task) {
       return;

@@ -1,5 +1,7 @@
 export default interface ActivityReservationHandlerConfig {
   enabled: boolean;
+  auto_wrapup?: boolean;
+  wrapup_timeout_ms?: number;
   system_activity_names: {
     available: string;
     onATask: string;

@@ -213,7 +213,11 @@
       },
       "custom_hold_music": {
         "enabled": true,
-        "url": "https://flavescent-viper-9388.twil.io/assets/midnight-walk-mark-dorricott-mp3_XIIVHT8N.mp3"
+        "default_url": "https://flavescent-viper-9388.twil.io/assets/midnight-walk-mark-dorricott-mp3_XIIVHT8N.mp3",
+        "queue_music": {
+          "WQ9f878356a10749484c96bb62c45007d6": "https://flavescent-viper-9388.twil.io/assets/HoldMusic-NAIteroFrontLine.mp3",
+          "AQYYYYYYYYYYYYYYYYYYYYYYYYYYYYY": "https://example.com/sales-hold-music.mp3"
+        }
       },
       "custom_transfer_directory": {
         "enabled": false,
@@ -449,6 +453,12 @@
       "agent_queue_stats": {
         "enabled": true,
         "serverless_function_url": ""
+      },
+      "call_title_by_team": {
+        "enabled": true
+      },
+      "activity_duration_timer": {
+        "enabled": true
       }
     }
   }

@@ -9,13 +9,26 @@ import logger from '../../../../utils/logger';
 async function selectAndAcceptTask(task: ITask, taskConfig: TaskQualificationConfig) {
   const {
     sid,
-    attributes: { direction },
+    attributes: { direction, queueSid },
     taskChannelUniqueName,
   } = task;
 
   // we don't want to auto accept outbound voice tasks as they are already auto
   // accepted
   if (taskChannelUniqueName === 'voice' && direction === 'outbound') return;
+
+  // Skip SMS channel - manual accept required
+  if (taskChannelUniqueName === 'sms') {
+    logger.debug(`[agent-automation] Skipping auto-accept for SMS task ${sid}`);
+    return;
+  }
+
+  // Skip excluded queues
+  const excludedQueues = taskConfig.excluded_queue_sids || [];
+  if (excludedQueues.includes(queueSid)) {
+    logger.debug(`[agent-automation] Skipping auto-accept for excluded queue ${queueSid} task ${sid}`);
+    return;
+  }
 
   // Select and accept the task per configuration
   try {

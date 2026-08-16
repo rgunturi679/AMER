@@ -1,11 +1,19 @@
 import { getFeatureFlags } from '../../utils/configuration';
 
-const { enabled = false, url = '' } = getFeatureFlags()?.features?.custom_hold_music || {};
+const config = getFeatureFlags()?.features?.custom_hold_music || {};
+const { enabled = false, url = '', queue_music = {}, default_url = '' } = config;
 
 export const isFeatureEnabled = () => {
   return enabled;
 };
 
-export const getHoldMusicUrl = () => {
-  return url;
+export const getHoldMusicUrl = (queueName?: string) => {
+  if (queueName && queue_music[queueName]) {
+    return queue_music[queueName];
+  }
+  return default_url || url;
+};
+
+export const getQueueMusicConfig = () => {
+  return { queue_music, default_url, url };
 };

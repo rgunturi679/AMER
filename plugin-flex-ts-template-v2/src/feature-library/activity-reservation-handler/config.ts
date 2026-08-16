@@ -3,6 +3,8 @@ import ActivityReservationHandlerConfig from './types/ServiceConfiguration';
 
 const {
   enabled = false,
+  auto_wrapup = false,
+  wrapup_timeout_ms = 60000,
   system_activity_names = {
     available: 'Available',
     onATask: 'On a Task',
@@ -15,6 +17,14 @@ const {
 
 export const isFeatureEnabled = () => {
   return enabled;
+};
+
+export const isAutoWrapupEnabled = () => {
+  return auto_wrapup;
+};
+
+export const getWrapupTimeoutMs = () => {
+  return wrapup_timeout_ms;
 };
 
 export const getSystemActivityNames = () => {

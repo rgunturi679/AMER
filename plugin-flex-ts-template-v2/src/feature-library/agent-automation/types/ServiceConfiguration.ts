@@ -14,6 +14,9 @@ export interface TaskQualificationConfig {
   default_outcome: string;
   allow_extended_wrapup: boolean;
   extended_wrapup_time: number;
+  excluded_queue_sids?: Array<string>;
+  announcement_enabled?: boolean;
+  announcement_url?: string;
 }
 
 export default interface AgentAutomationConfig {
