@@ -14,39 +14,54 @@ const AgentQueueStats = () => {
   const [filterValue, setFilterValue] = useState('All');
   const [agentAssignedQueueSids, setAgentAssignedQueueSids] = useState<string[]>([]);
 
-  // Determine if current user is an agent (not supervisor/admin)
   const userRoles = manager.user.roles;
   const hasAgentRole = userRoles.indexOf('agent') >= 0;
   const hasSupervisorRole = userRoles.indexOf('supervisor') >= 0;
   const hasAdminRole = userRoles.indexOf('admin') >= 0;
   const isAgent = hasAgentRole && !hasSupervisorRole && !hasAdminRole;
 
-  // Get agent's assigned queue SIDs
+  console.log('[AQS:5] Component render —', {
+    statsCount: stats.length,
+    userRoles,
+    isAgent,
+    filterValue,
+    reduxStateKey: (manager.store.getState() as any).agentQueueStats ? 'present' : 'MISSING',
+  });
+
+  useEffect(() => {
+    console.log('[AQS:5] useEffect — stats from Redux:', stats.length, 'entries');
+    if (stats.length > 0) {
+      console.log('[AQS:5] useEffect — first queue:', stats[0]?.queue?.queue_name, stats[0]?.queue?.queue_sid);
+    }
+  }, [stats]);
+
   useEffect(() => {
     const fetchQueues = async () => {
       const workerSid = manager.workerClient?.sid;
       const workspaceSid = manager.serviceConfiguration?.taskrouter_workspace_sid;
       const serverlessUrl = getServerlessFunctionUrl();
 
+      console.log('[AQS:5] fetchAgentQueues —', { isAgent, workerSid, workspaceSid, serverlessUrl: serverlessUrl || '(empty)' });
+
       if (isAgent && workerSid && workspaceSid && serverlessUrl) {
         try {
           const response = await fetch(serverlessUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              WorkerSid: workerSid,
-              WorkspaceSid: workspaceSid,
-            }),
+            body: JSON.stringify({ WorkerSid: workerSid, WorkspaceSid: workspaceSid }),
           });
 
           if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
           const data = await response.json();
           const queueSids = data.queueSids || [];
+          console.log('[AQS:5] fetchAgentQueues — agent assigned queue SIDs:', queueSids);
           setAgentAssignedQueueSids(queueSids);
         } catch (error) {
-          console.error('[agent-queue-stats] Error fetching agent assigned queues:', error);
+          console.error('[AQS:5] fetchAgentQueues — ERROR:', error);
         }
+      } else {
+        console.log('[AQS:5] fetchAgentQueues — skipping (not agent, missing SIDs, or no serverlessUrl)');
       }
     };
 
@@ -57,7 +72,6 @@ const AgentQueueStats = () => {
     setFilterValue(event.target.value as string);
   };
 
-  // Define the keys for Invisalign and iTero
   const keysInvisalign = [
     'WQ01480077ddceba12ff8b2a91a622719c',
     'WQc59c01182fa53804fc2f72f33f0050ee',
@@ -101,9 +115,16 @@ const AgentQueueStats = () => {
     'WQ42f170f5d612dfe1761854b30b09b769',
   ];
 
-  // Determine the keys to be filtered based on filterValue
   const keysTobeFiltered =
     filterValue === 'Invisalign' ? keysInvisalign : filterValue === 'iTero' ? keysItero : keysInvisalign.concat(keysItero);
+
+  const filteredStats = stats.filter((queue: QueueStats) => keysTobeFiltered.includes(queue.queue.queue_sid));
+  console.log('[AQS:5] Filtered rows to display:', filteredStats.length, '(total in Redux:', stats.length, ', filter:', filterValue, ')');
+
+  if (stats.length > 0 && filteredStats.length === 0) {
+    const actualSids = stats.map((q: QueueStats) => q.queue.queue_sid);
+    console.warn('[AQS:5] WARNING — stats in Redux but 0 match the LOB filter. Actual queue SIDs:', actualSids);
+  }
 
   return (
     <AgentQueueStatsWrapper>
@@ -114,10 +135,7 @@ const AgentQueueStats = () => {
           <MenuItem value="iTero">iTero</MenuItem>
         </TextField>
       </div>
-      <CustomDataTable
-        items={stats.filter((queue: QueueStats) => keysTobeFiltered.includes(queue.queue.queue_sid))}
-        defaultSortColumn="name-column"
-      >
+      <CustomDataTable items={filteredStats} defaultSortColumn="name-column">
         <ColumnDefinition
           key="name-column"
           header="Queue"
@@ -130,8 +148,7 @@ const AgentQueueStats = () => {
           header="CW"
           content={(queue: QueueStats) => {
             const isMasked = isAgent && agentAssignedQueueSids.includes(queue.queue.queue_sid);
-            const displayValue = isMasked ? '—' : queue?.tasks_now?.waiting_tasks;
-            return <span>{displayValue}</span>;
+            return <span>{isMasked ? '—' : queue?.tasks_now?.waiting_tasks}</span>;
           }}
         />
         <ColumnDefinition
@@ -139,8 +156,7 @@ const AgentQueueStats = () => {
           header="AVL"
           content={(queue: QueueStats) => {
             const isMasked = isAgent && agentAssignedQueueSids.includes(queue.queue.queue_sid);
-            const displayValue = isMasked ? '—' : queue?.workers?.total_available_workers;
-            return <span>{displayValue}</span>;
+            return <span>{isMasked ? '—' : queue?.workers?.total_available_workers}</span>;
           }}
         />
         <ColumnDefinition

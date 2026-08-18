@@ -32,11 +32,15 @@ export default abstract class LiveQueryHelper<T> {
   constructor(indexName: string, queryExpression: string) {
     this.indexName = indexName;
     this.queryExpression = queryExpression;
+    console.log(`[AQS:2] LiveQueryHelper constructor — index: "${indexName}", query: "${queryExpression}"`);
   }
 
   protected async startLiveQuery(): Promise<{ [key: string]: T }> {
+    console.log(`[AQS:2] startLiveQuery — awaiting liveQuery init for index: "${this.indexName}"`);
     await this.liveQuery;
-    return this.#items || {};
+    const items = this.#items || {};
+    console.log(`[AQS:2] startLiveQuery — resolved, item count: ${Object.keys(items).length}`);
+    return items;
   }
 
   protected async closeLiveQuery(): Promise<void> {
@@ -49,12 +53,16 @@ export default abstract class LiveQueryHelper<T> {
   }
 
   #initLiveQuery = async (): Promise<LiveQuery> => {
+    console.log(`[AQS:2] #initLiveQuery — calling insightsClient.liveQuery("${this.indexName}", "${this.queryExpression}")`);
     try {
       this.#liveQuery = await this.manager.insightsClient.liveQuery(this.indexName, this.queryExpression);
       this.#items = this.#liveQuery.getItems() as unknown as { [key: string]: T };
+      const count = Object.keys(this.#items).length;
+      console.log(`[AQS:2] #initLiveQuery — SUCCESS, initial items: ${count}`, Object.keys(this.#items));
       this.#liveQuery.on('itemUpdated', this.#onItemUpdated.bind(this));
       return this.#liveQuery;
     } catch (e) {
+      console.error(`[AQS:2] #initLiveQuery — ERROR for index "${this.indexName}":`, e);
       if (this.#liveQuery) {
         this.#liveQuery.close();
         this.#liveQuery = undefined;
@@ -69,6 +77,7 @@ export default abstract class LiveQueryHelper<T> {
     const data = { ...this.#items };
     const existingItem = Object.keys(data).includes(event.key);
     this.#items = { ...data, [event.key]: event.value };
+    console.log(`[AQS:2] #onItemUpdated — key: "${event.key}", isNew: ${!existingItem}`);
     if (existingItem) {
       this.onItemUpdated && this.onItemUpdated(event);
     } else {
