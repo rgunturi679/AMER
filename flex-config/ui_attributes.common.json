@@ -452,7 +452,7 @@
       },
       "agent_queue_stats": {
         "enabled": true,
-        "serverless_function_url": ""
+        "serverless_function_url": "https://test-service-5757.twil.io/get-agent-queues"
       },
       "call_title_by_team": {
         "enabled": true

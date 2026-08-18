@@ -1,10 +1,9 @@
 import * as Flex from '@twilio/flex-ui';
 import { SyncMap } from 'twilio-sync';
 
-import { reduxNamespace } from '../../../utils/state';
 import QueuesHelper, { AgentQueue } from './QueuesHelper';
 import { LiveQueryAddedEvent, LiveQueryUpdatedEvent } from './LiveQueryHelper';
-import { updateStats } from '../flex-hooks/reducers/AgentQueueStats';
+import { updateStats } from '../flex-hooks/states/AgentQueueStatsSlice';
 
 export interface QueueStats {
   queue: AgentQueue;
@@ -27,6 +26,10 @@ export interface QueueTasksNow {
   timestamp_updated: number;
 }
 
+interface QueueTasksNowMap {
+  [key: string]: QueueTasksNow;
+}
+
 export interface QueueTasksHistorical {
   total_tasks_count: number;
   handled_tasks_count: number;
@@ -40,6 +43,10 @@ export interface QueueTasksHistorical {
   flow_out_tasks_percentage: number;
   sla_percentage: number;
   timestamp_updated: number;
+}
+
+interface QueueTasksHistoricalMap {
+  [key: string]: QueueTasksHistorical;
 }
 
 export interface QueueWorkerActivities {
@@ -59,7 +66,7 @@ interface MapCache {
   [queueSid: string]: SyncMap;
 }
 
-export class StatsHelper {
+export default class StatsHelper {
   mapCache: MapCache;
   manager: Flex.Manager;
   queuesHelper: QueuesHelper;
@@ -67,9 +74,6 @@ export class StatsHelper {
   constructor(manager: Flex.Manager) {
     this.mapCache = {};
     this.manager = manager;
-    const ic = manager.insightsClient as any;
-    console.log('[agent-queue-stats] StatsHelper: initializing, opening tr-queue LiveQuery');
-    console.log('[agent-queue-stats] StatsHelper: insightsClient connectionState at StatsHelper init=', ic?.connectionState);
 
     this.queuesHelper = new QueuesHelper(
       async (items: { [key: string]: AgentQueue }) => {
@@ -85,25 +89,19 @@ export class StatsHelper {
   }
 
   async fetchQueueStats(queue: AgentQueue): Promise<QueueStats | null> {
-    if (this.mapCache[queue.queue_sid]) {
-      console.log(`[agent-queue-stats] fetchQueueStats: cache hit for "${queue.queue_name}", skipping`);
-      return null;
-    }
+    const stats: QueueStats = { queue };
 
-    console.log(`[agent-queue-stats] fetchQueueStats: opening SyncMap for "${queue.queue_name}" (${queue.queue_sid})`);
-    try {
-      this.mapCache[queue.queue_sid] = await this.manager.insightsClient.map({
-        id: `${queue.queue_sid}.realtime_statistics.v1`,
-        mode: 'open_existing',
-      });
-      console.log(`[agent-queue-stats] fetchQueueStats: SyncMap opened for "${queue.queue_name}"`);
-    } catch (err) {
-      console.error(`[agent-queue-stats] fetchQueueStats: failed to open SyncMap for "${queue.queue_name}" (${queue.queue_sid})`, err);
-      return null;
-    }
+    // no need to do anything if the map is open already
+    if (this.mapCache[queue.queue_sid]) return null;
+
+    this.mapCache[queue.queue_sid] = await this.manager.insightsClient.map({
+      id: `${queue.queue_sid}.realtime_statistics.v1`,
+      mode: 'open_existing',
+    });
 
     const queueStatsMap = this.mapCache[queue.queue_sid];
 
+    // set up listeners
     queueStatsMap.on('itemAdded', (args: any) => {
       this.onStatsUpdated(queue.queue_sid, args.item);
     });
@@ -111,80 +109,72 @@ export class StatsHelper {
       this.onStatsUpdated(queue.queue_sid, args.item);
     });
 
-    let stats: QueueStats = { queue };
+    // get initial data
     const mapItems = await queueStatsMap.getItems();
-    console.log(`[agent-queue-stats] fetchQueueStats: got ${mapItems.items.length} items for "${queue.queue_name}"`);
+    let updatedStats = stats;
     mapItems.items.forEach((item) => {
-      stats = this.updateStatsItem(item, stats);
+      updatedStats = this.updateStatsItem(item, updatedStats);
     });
 
-    return stats;
+    return updatedStats;
   }
 
   async onQueuesLoaded(items: { [key: string]: AgentQueue }) {
-    const queueCount = Object.keys(items).length;
-    console.log(`[agent-queue-stats] onQueuesLoaded: LiveQuery returned ${queueCount} queues`);
-
-    const allStats: QueueStats[] = [];
+    const allStats: Array<QueueStats> = [];
 
     for (const queueSid in items) {
       const stats = await this.fetchQueueStats(items[queueSid]);
-      if (stats) allStats.push(stats);
+      if (!stats) continue;
+      allStats.push(stats);
     }
 
-    console.log(`[agent-queue-stats] onQueuesLoaded: dispatching ${allStats.length} queue stats to Redux`);
     this.manager.store.dispatch(updateStats(allStats));
   }
 
   async onQueueAdded(event: LiveQueryAddedEvent<AgentQueue>) {
     const stats = await this.fetchQueueStats(event.value);
-    if (stats) this.manager.store.dispatch(updateStats([stats]));
+    if (!stats) return;
+    this.manager.store.dispatch(updateStats([stats]));
   }
 
   onQueueUpdated(event: LiveQueryUpdatedEvent<AgentQueue>) {
     const state = this.manager.store.getState() as any;
-    const featureState = state[reduxNamespace]?.agentQueueStats;
-    const existing = featureState?.stats?.find((s: QueueStats) => s.queue.queue_sid === event.key);
-    if (!existing) return;
+    const statsArray: QueueStats[] = state.agentQueueStats?.stats || [];
+    const stats = statsArray.find((queueStats) => queueStats.queue.queue_sid === event.key);
+    if (!stats) return;
 
-    const updated: QueueStats = { ...existing, queue: event.value };
-    this.manager.store.dispatch(updateStats([updated]));
+    const updatedStats = { ...stats, queue: event.value };
+    this.manager.store.dispatch(updateStats([updatedStats]));
   }
 
   onStatsUpdated(queueSid: string, item: any) {
     const state = this.manager.store.getState() as any;
-    const featureState = state[reduxNamespace]?.agentQueueStats;
-    const existing = featureState?.stats?.find((s: QueueStats) => s.queue.queue_sid === queueSid);
-    if (!existing) return;
+    const statsArray: QueueStats[] = state.agentQueueStats?.stats || [];
+    const stats = statsArray.find((queueStats) => queueStats.queue.queue_sid === queueSid);
 
-    const updated = this.updateStatsItem(item, { ...existing });
-    this.manager.store.dispatch(updateStats([updated]));
+    if (!stats) return;
+
+    const updatedStats = this.updateStatsItem(item, { ...stats });
+    this.manager.store.dispatch(updateStats([updatedStats]));
   }
 
   updateStatsItem(newItem: any, stats: QueueStats): QueueStats {
     switch (newItem.key) {
       case 'tasks_now':
-        stats.tasks_now = (newItem.data as { queue: QueueTasksNow })['queue'];
+        stats.tasks_now = (newItem.data as QueueTasksNowMap)['queue'];
         break;
       case 'tasks_thirty_minutes':
-        stats.tasks_thirty_minutes = (newItem.data as { queue: QueueTasksHistorical })['queue'];
+        stats.tasks_thirty_minutes = (newItem.data as QueueTasksHistoricalMap)['queue'];
         break;
       case 'tasks_today':
-        stats.tasks_today = (newItem.data as { queue: QueueTasksHistorical })['queue'];
+        stats.tasks_today = (newItem.data as QueueTasksHistoricalMap)['queue'];
         break;
       case 'worker_activities_statistics':
         stats.workers = newItem.data as QueueWorkerActivities;
         break;
       default:
-        break;
     }
-    return stats;
-  }
 
-  closeMaps() {
-    for (const queueSid in this.mapCache) {
-      this.mapCache[queueSid].close();
-    }
-    this.mapCache = {};
+    return stats;
   }
 }

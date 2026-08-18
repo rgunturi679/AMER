@@ -7,13 +7,17 @@ interface OwnProps {
 }
 
 const AgentQueueStatsSideLink = (props: OwnProps) => {
+  function navigate() {
+    Actions.invokeAction('NavigateToView', { viewName: props.viewName });
+  }
+
   return (
     <SideLink
       showLabel={true}
       icon="Queues"
       iconActive="QueuesBold"
       isActive={props.activeView === props.viewName}
-      onClick={() => Actions.invokeAction('NavigateToView', { viewName: props.viewName })}
+      onClick={navigate}
       key="agent-queue-stats-side-link"
     >
       All Queue Stats

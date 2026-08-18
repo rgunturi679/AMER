@@ -1,9 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
+
 import { QueueStats } from '../../utils/StatsHelper';
 
 export interface AgentQueueStatsState {
-  stats: QueueStats[];
+  stats: Array<QueueStats>;
 }
 
 const initialState: AgentQueueStatsState = { stats: [] };
@@ -12,13 +13,16 @@ const agentQueueStatsSlice = createSlice({
   name: 'agentQueueStats',
   initialState,
   reducers: {
-    updateStats(state, action: PayloadAction<QueueStats[]>) {
-      action.payload.forEach((incoming) => {
-        const idx = state.stats.findIndex((s) => s.queue.queue_sid === incoming.queue.queue_sid);
-        if (idx >= 0) {
-          state.stats[idx] = incoming;
+    updateStats(state, action: PayloadAction<Array<QueueStats>>) {
+      action.payload.forEach((item) => {
+        const existingIndex = state.stats.findIndex(
+          (queueStats) => queueStats.queue.queue_sid === item.queue.queue_sid,
+        );
+
+        if (existingIndex >= 0) {
+          state.stats[existingIndex] = item;
         } else {
-          state.stats.push(incoming);
+          state.stats.push(item);
         }
       });
     },

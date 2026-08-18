@@ -4,6 +4,10 @@ import AgentQueueStatsConfig from './types/ServiceConfiguration';
 const { enabled = false, serverless_function_url = '' } =
   (getFeatureFlags()?.features?.agent_queue_stats as AgentQueueStatsConfig) || {};
 
-export const isFeatureEnabled = () => enabled;
+export const isFeatureEnabled = () => {
+  return enabled;
+};
 
-export const getServerlessFunctionUrl = () => serverless_function_url;
+export const getServerlessFunctionUrl = () => {
+  return serverless_function_url;
+};

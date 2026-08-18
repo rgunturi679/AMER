@@ -1,3 +1,9 @@
-// This file is intentionally left empty.
-// StatsHelper initialization is handled by tokenUpdated.ts,
-// which fires after insightsClient is ready with a valid token.
+import * as Flex from '@twilio/flex-ui';
+
+import { FlexEvent } from '../../../../types/feature-loader';
+import StatsHelper from '../../utils/StatsHelper';
+
+export const eventName = FlexEvent.pluginsInitialized;
+export const eventHook = function initAgentQueueStats(_flex: typeof Flex, manager: Flex.Manager) {
+  new StatsHelper(manager);
+};

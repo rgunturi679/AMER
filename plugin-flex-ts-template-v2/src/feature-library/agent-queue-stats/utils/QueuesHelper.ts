@@ -14,10 +14,12 @@ export default class QueuesHelper extends LiveQueryHelper<AgentQueue> {
     onItemUpdated: (event: LiveQueryUpdatedEvent<AgentQueue>) => void,
   ) {
     super('tr-queue', '');
-    this.startLiveQuery()
-      .then(onInit)
-      .catch((err) => console.error('[agent-queue-stats] QueuesHelper: LiveQuery failed', err));
     this.onItemAdded = onItemAdded;
     this.onItemUpdated = onItemUpdated;
+    this.initQuery(onInit);
+  }
+
+  private initQuery(onInit: (items: { [key: string]: AgentQueue }) => void) {
+    this.startLiveQuery().then(onInit);
   }
 }
