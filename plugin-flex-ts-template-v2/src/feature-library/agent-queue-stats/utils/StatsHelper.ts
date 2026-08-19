@@ -4,6 +4,8 @@ import { SyncMap } from 'twilio-sync';
 import QueuesHelper, { AgentQueue } from './QueuesHelper';
 import { LiveQueryAddedEvent, LiveQueryUpdatedEvent } from './LiveQueryHelper';
 import { updateStats } from '../flex-hooks/states/AgentQueueStatsSlice';
+import { reduxNamespace } from '../../../utils/state';
+import logger from '../../../utils/logger';
 
 export interface QueueStats {
   queue: AgentQueue;
@@ -72,7 +74,7 @@ export default class StatsHelper {
   queuesHelper: QueuesHelper;
 
   constructor(manager: Flex.Manager) {
-    console.log('[AQS:3] StatsHelper constructor — initializing QueuesHelper');
+    logger.debug('[AQS:3] StatsHelper constructor — initializing QueuesHelper');
     this.mapCache = {};
     this.manager = manager;
 
@@ -90,57 +92,61 @@ export default class StatsHelper {
   }
 
   async fetchQueueStats(queue: AgentQueue): Promise<QueueStats | null> {
-    console.log(`[AQS:3] fetchQueueStats — queue: "${queue.queue_name}" (${queue.queue_sid})`);
+    logger.debug(`[AQS:3] fetchQueueStats — queue: "${queue.queue_name}" (${queue.queue_sid})`);
 
     if (this.mapCache[queue.queue_sid]) {
-      console.log(`[AQS:3] fetchQueueStats — map already open for "${queue.queue_name}", skipping`);
+      logger.debug(`[AQS:3] fetchQueueStats — map already open for "${queue.queue_name}", skipping`);
       return null;
     }
 
     const mapId = `${queue.queue_sid}.realtime_statistics.v1`;
-    console.log(`[AQS:3] fetchQueueStats — opening Sync map: "${mapId}"`);
+    logger.debug(`[AQS:3] fetchQueueStats — opening Sync map: "${mapId}"`);
 
     try {
       this.mapCache[queue.queue_sid] = await this.manager.insightsClient.map({
         id: mapId,
         mode: 'open_existing',
       });
-      console.log(`[AQS:3] fetchQueueStats — Sync map opened for "${queue.queue_name}"`);
+      logger.debug(`[AQS:3] fetchQueueStats — Sync map opened for "${queue.queue_name}"`);
     } catch (e) {
-      console.error(`[AQS:3] fetchQueueStats — ERROR opening Sync map for "${queue.queue_name}" (${mapId}):`, e);
+      logger.error(`[AQS:3] fetchQueueStats — ERROR opening Sync map for "${queue.queue_name}" (${mapId})`, { error: e });
       return null;
     }
 
     const queueStatsMap = this.mapCache[queue.queue_sid];
 
     queueStatsMap.on('itemAdded', (args: any) => {
-      console.log(`[AQS:3] Sync itemAdded — queue: "${queue.queue_name}", key: "${args.item?.key}"`);
+      logger.debug(`[AQS:3] Sync itemAdded — queue: "${queue.queue_name}", key: "${args.item?.key}"`);
       this.onStatsUpdated(queue.queue_sid, args.item);
     });
     queueStatsMap.on('itemUpdated', (args: any) => {
-      console.log(`[AQS:3] Sync itemUpdated — queue: "${queue.queue_name}", key: "${args.item?.key}"`);
+      logger.debug(`[AQS:3] Sync itemUpdated — queue: "${queue.queue_name}", key: "${args.item?.key}"`);
       this.onStatsUpdated(queue.queue_sid, args.item);
     });
 
-    console.log(`[AQS:3] fetchQueueStats — calling getItems() for "${queue.queue_name}"`);
+    logger.debug(`[AQS:3] fetchQueueStats — calling getItems() for "${queue.queue_name}"`);
     const mapItems = await queueStatsMap.getItems();
-    console.log(`[AQS:3] fetchQueueStats — getItems() returned ${mapItems.items.length} items for "${queue.queue_name}":`, mapItems.items.map((i: any) => i.key));
+    logger.debug(`[AQS:3] fetchQueueStats — getItems() returned ${mapItems.items.length} items for "${queue.queue_name}"`, {
+      keys: mapItems.items.map((i: any) => i.key),
+    });
 
     let stats: QueueStats = { queue };
     mapItems.items.forEach((item) => {
       stats = this.updateStatsItem(item, stats);
     });
 
-    console.log(`[AQS:3] fetchQueueStats — built stats for "${queue.queue_name}":`, JSON.stringify(stats));
+    logger.debug(`[AQS:3] fetchQueueStats — built stats for "${queue.queue_name}"`, { stats });
     return stats;
   }
 
   async onQueuesLoaded(items: { [key: string]: AgentQueue }) {
     const queueCount = Object.keys(items).length;
-    console.log(`[AQS:3] onQueuesLoaded — ${queueCount} queues discovered:`, Object.values(items).map((q) => q.queue_name));
+    logger.debug(`[AQS:3] onQueuesLoaded — ${queueCount} queues discovered`, {
+      queues: Object.values(items).map((q) => q.queue_name),
+    });
 
     if (queueCount === 0) {
-      console.warn('[AQS:3] onQueuesLoaded — WARNING: 0 queues returned from LiveQuery. Check tr-queue index permissions.');
+      logger.warn('[AQS:3] onQueuesLoaded — 0 queues returned from LiveQuery. Check tr-queue index permissions.');
     }
 
     const allStats: Array<QueueStats> = [];
@@ -151,21 +157,21 @@ export default class StatsHelper {
       allStats.push(stats);
     }
 
-    console.log(`[AQS:3] onQueuesLoaded — dispatching updateStats with ${allStats.length} entries`);
+    logger.debug(`[AQS:3] onQueuesLoaded — dispatching updateStats with ${allStats.length} entries`);
     this.manager.store.dispatch(updateStats(allStats));
   }
 
   async onQueueAdded(event: LiveQueryAddedEvent<AgentQueue>) {
-    console.log(`[AQS:3] onQueueAdded — "${event.value.queue_name}" (${event.key})`);
+    logger.debug(`[AQS:3] onQueueAdded — "${event.value.queue_name}" (${event.key})`);
     const stats = await this.fetchQueueStats(event.value);
     if (!stats) return;
     this.manager.store.dispatch(updateStats([stats]));
   }
 
   onQueueUpdated(event: LiveQueryUpdatedEvent<AgentQueue>) {
-    console.log(`[AQS:3] onQueueUpdated — key: "${event.key}"`);
+    logger.debug(`[AQS:3] onQueueUpdated — key: "${event.key}"`);
     const state = this.manager.store.getState() as any;
-    const statsArray: QueueStats[] = state.agentQueueStats?.stats || [];
+    const statsArray: QueueStats[] = state[reduxNamespace]?.agentQueueStats?.stats || [];
     const stats = statsArray.find((queueStats) => queueStats.queue.queue_sid === event.key);
     if (!stats) return;
 
@@ -175,11 +181,11 @@ export default class StatsHelper {
 
   onStatsUpdated(queueSid: string, item: any) {
     const state = this.manager.store.getState() as any;
-    const statsArray: QueueStats[] = state.agentQueueStats?.stats || [];
+    const statsArray: QueueStats[] = state[reduxNamespace]?.agentQueueStats?.stats || [];
     const stats = statsArray.find((queueStats) => queueStats.queue.queue_sid === queueSid);
 
     if (!stats) {
-      console.warn(`[AQS:3] onStatsUpdated — no stats entry found in Redux for queueSid: "${queueSid}"`);
+      logger.warn(`[AQS:3] onStatsUpdated — no stats entry found in Redux for queueSid: "${queueSid}"`);
       return;
     }
 
@@ -188,7 +194,7 @@ export default class StatsHelper {
   }
 
   updateStatsItem(newItem: any, stats: QueueStats): QueueStats {
-    console.log(`[AQS:3] updateStatsItem — key: "${newItem.key}" for queue: "${stats.queue.queue_name}"`);
+    logger.debug(`[AQS:3] updateStatsItem — key: "${newItem.key}" for queue: "${stats.queue.queue_name}"`);
     switch (newItem.key) {
       case 'tasks_now':
         stats.tasks_now = (newItem.data as QueueTasksNowMap)['queue'];
@@ -203,7 +209,7 @@ export default class StatsHelper {
         stats.workers = newItem.data as QueueWorkerActivities;
         break;
       default:
-        console.warn(`[AQS:3] updateStatsItem — unhandled key: "${newItem.key}"`);
+        logger.warn(`[AQS:3] updateStatsItem — unhandled key: "${newItem.key}"`);
     }
     return stats;
   }

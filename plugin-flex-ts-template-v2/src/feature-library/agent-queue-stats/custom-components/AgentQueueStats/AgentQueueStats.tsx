@@ -6,10 +6,12 @@ import { TextField, MenuItem } from '@material-ui/core';
 import { QueueStats } from '../../utils/StatsHelper';
 import { getServerlessFunctionUrl } from '../../config';
 import { AgentQueueStatsWrapper, CustomDataTable } from './AgentQueueStats.Styles';
+import { reduxNamespace } from '../../../../utils/state';
+import logger from '../../../../utils/logger';
 
 const AgentQueueStats = () => {
   const manager = Manager.getInstance();
-  const stats = useSelector((state: any) => state.agentQueueStats?.stats || []);
+  const stats = useSelector((state: any) => state[reduxNamespace]?.agentQueueStats?.stats || []);
 
   const [filterValue, setFilterValue] = useState('All');
   const [agentAssignedQueueSids, setAgentAssignedQueueSids] = useState<string[]>([]);
@@ -20,18 +22,18 @@ const AgentQueueStats = () => {
   const hasAdminRole = userRoles.indexOf('admin') >= 0;
   const isAgent = hasAgentRole && !hasSupervisorRole && !hasAdminRole;
 
-  console.log('[AQS:5] Component render —', {
+  logger.debug('[AQS:5] Component render —', {
     statsCount: stats.length,
     userRoles,
     isAgent,
     filterValue,
-    reduxStateKey: (manager.store.getState() as any).agentQueueStats ? 'present' : 'MISSING',
+    reduxStateKey: (manager.store.getState() as any)[reduxNamespace]?.agentQueueStats ? 'present' : 'MISSING',
   });
 
   useEffect(() => {
-    console.log('[AQS:5] useEffect — stats from Redux:', stats.length, 'entries');
+    logger.debug(`[AQS:5] useEffect — stats from Redux: ${stats.length} entries`);
     if (stats.length > 0) {
-      console.log('[AQS:5] useEffect — first queue:', stats[0]?.queue?.queue_name, stats[0]?.queue?.queue_sid);
+      logger.debug(`[AQS:5] useEffect — first queue: ${stats[0]?.queue?.queue_name} ${stats[0]?.queue?.queue_sid}`);
     }
   }, [stats]);
 
@@ -41,7 +43,7 @@ const AgentQueueStats = () => {
       const workspaceSid = manager.serviceConfiguration?.taskrouter_workspace_sid;
       const serverlessUrl = getServerlessFunctionUrl();
 
-      console.log('[AQS:5] fetchAgentQueues —', { isAgent, workerSid, workspaceSid, serverlessUrl: serverlessUrl || '(empty)' });
+      logger.debug('[AQS:5] fetchAgentQueues —', { isAgent, workerSid, workspaceSid, serverlessUrl: serverlessUrl || '(empty)' });
 
       if (isAgent && workerSid && workspaceSid && serverlessUrl) {
         try {
@@ -55,13 +57,13 @@ const AgentQueueStats = () => {
 
           const data = await response.json();
           const queueSids = data.queueSids || [];
-          console.log('[AQS:5] fetchAgentQueues — agent assigned queue SIDs:', queueSids);
+          logger.debug('[AQS:5] fetchAgentQueues — agent assigned queue SIDs:', { queueSids });
           setAgentAssignedQueueSids(queueSids);
         } catch (error) {
-          console.error('[AQS:5] fetchAgentQueues — ERROR:', error);
+          logger.error('[AQS:5] fetchAgentQueues — ERROR', { error });
         }
       } else {
-        console.log('[AQS:5] fetchAgentQueues — skipping (not agent, missing SIDs, or no serverlessUrl)');
+        logger.debug('[AQS:5] fetchAgentQueues — skipping (not agent, missing SIDs, or no serverlessUrl)');
       }
     };
 
@@ -119,11 +121,11 @@ const AgentQueueStats = () => {
     filterValue === 'Invisalign' ? keysInvisalign : filterValue === 'iTero' ? keysItero : keysInvisalign.concat(keysItero);
 
   const filteredStats = stats.filter((queue: QueueStats) => keysTobeFiltered.includes(queue.queue.queue_sid));
-  console.log('[AQS:5] Filtered rows to display:', filteredStats.length, '(total in Redux:', stats.length, ', filter:', filterValue, ')');
+  logger.debug(`[AQS:5] Filtered rows to display: ${filteredStats.length} (total in Redux: ${stats.length}, filter: ${filterValue})`);
 
   if (stats.length > 0 && filteredStats.length === 0) {
     const actualSids = stats.map((q: QueueStats) => q.queue.queue_sid);
-    console.warn('[AQS:5] WARNING — stats in Redux but 0 match the LOB filter. Actual queue SIDs:', actualSids);
+    logger.warn('[AQS:5] stats in Redux but 0 match the LOB filter', { actualSids });
   }
 
   return (
@@ -169,8 +171,8 @@ const AgentQueueStats = () => {
           header="SLA"
           content={(queue: QueueStats) => {
             const sla = queue?.tasks_today?.sla_percentage;
-            return <span>{typeof sla === 'number' && sla >= 0 ? `${Math.round(sla * 100)}%` : 'N/A'}</span>;
-          }}
+            return <span>{typeof sla === 'number' && sla >= 0 ? `${Math.round(sla * 100)}%` : 'N/A'}</span>}
+          }
         />
         <ColumnDefinition
           key="offered-today-column"
