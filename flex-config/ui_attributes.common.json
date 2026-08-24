@@ -24,7 +24,7 @@
     },
     "features": {
       "activity_skill_filter": {
-        "enabled": false,
+        "enabled": true,
         "rules": {
           "On a Task": {
             "required_skill": "system_activities",
@@ -92,7 +92,7 @@
         "enabled": false
       },
       "supervisor_barge_coach": {
-        "enabled": false,
+        "enabled": true,
         "agent_coaching_panel": true,
         "supervisor_monitor_panel": true,
         "agent_assistance": true,
@@ -108,7 +108,7 @@
         "input_select": false
       },
       "dual_channel_recording": {
-        "enabled": false,
+        "enabled": true,
         "channel": "worker",
         "exclude_attributes": [],
         "exclude_queues": []
@@ -201,7 +201,7 @@
         ]
       },
       "supervisor_complete_reservation": {
-        "enabled": false,
+        "enabled": true,
         "outcome": "Completed by supervisor"
       },
       "canned_responses": {
