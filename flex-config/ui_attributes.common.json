@@ -169,7 +169,7 @@
             "auto_wrapup": true,
             "required_attributes": [],
             "required_worker_attributes": [],
-            "wrapup_time": 30000,
+            "wrapup_time": 3000000,
             "allow_extended_wrapup": false,
             "extended_wrapup_time": 0,
             "default_outcome": "Automatically completed"
@@ -216,7 +216,7 @@
         "default_url": "https://flavescent-viper-9388.twil.io/assets/midnight-walk-mark-dorricott-mp3_XIIVHT8N.mp3",
         "queue_music": {
           "WQ9f878356a10749484c96bb62c45007d6": "https://flavescent-viper-9388.twil.io/assets/HoldMusic-NAIteroFrontLine.mp3",
-          "AQYYYYYYYYYYYYYYYYYYYYYYYYYYYYY": "https://example.com/sales-hold-music.mp3"
+          "WQ281ec3ef9538eaf431dfbe18ab049999": "https://flavescent-viper-9388.twil.io/assets/HoldMusic-NAIteroFrontLine.mp3"
         }
       },
       "custom_transfer_directory": {
