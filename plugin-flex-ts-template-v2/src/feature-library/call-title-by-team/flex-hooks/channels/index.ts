@@ -1,3 +1,3 @@
-import { hookFunction as callChannelHook } from './call';
+import { channelHook as callChannelHook } from './call';
 
 export const channels = [callChannelHook];
