@@ -13,6 +13,8 @@ async function selectAndAcceptTask(task: ITask, taskConfig: TaskQualificationCon
     taskChannelUniqueName,
   } = task;
 
+  logger.debug(`[agent-automation] taskReceived: sid=${sid} channel=${taskChannelUniqueName} queueSid=${queueSid} direction=${direction}`);
+
   // we don't want to auto accept outbound voice tasks as they are already auto
   // accepted
   if (taskChannelUniqueName === 'voice' && direction === 'outbound') return;

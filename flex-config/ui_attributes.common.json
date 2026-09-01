@@ -169,10 +169,11 @@
             "auto_wrapup": true,
             "required_attributes": [],
             "required_worker_attributes": [],
-            "wrapup_time": 3000000,
+            "wrapup_time": 60000,
             "allow_extended_wrapup": false,
             "extended_wrapup_time": 0,
-            "default_outcome": "Automatically completed"
+            "default_outcome": "Automatically completed",
+            "excluded_queue_sids": ["WQ281ec3ef9538eaf431dfbe18ab049999"]
           },
           {
             "channel": "chat",
