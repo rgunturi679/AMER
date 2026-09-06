@@ -173,7 +173,7 @@
             "allow_extended_wrapup": false,
             "extended_wrapup_time": 0,
             "default_outcome": "Automatically completed",
-            "excluded_queue_sids": ["WQ281ec3ef9538eaf431dfbe18ab049999"]
+            "excluded_queue_sids": ""
           },
           {
             "channel": "chat",
