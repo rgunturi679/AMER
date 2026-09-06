@@ -9,8 +9,9 @@ import logger from '../../../../utils/logger';
 async function selectAndAcceptTask(task: ITask, taskConfig: TaskQualificationConfig) {
   const {
     sid,
-    attributes: { direction, queueSid },
+    attributes: { direction },
     taskChannelUniqueName,
+    queueSid,
   } = task;
 
   logger.debug(`[agent-automation] taskReceived: sid=${sid} channel=${taskChannelUniqueName} queueSid=${queueSid} direction=${direction}`);
