@@ -460,6 +460,9 @@
       },
       "activity_duration_timer": {
         "enabled": true
+      },
+      "hold_time": {
+        "enabled": true
       }
     }
   }
