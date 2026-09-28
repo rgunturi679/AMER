@@ -462,7 +462,7 @@
         "enabled": true
       },
       "hold_time": {
-        "enabled": false
+        "enabled": true
       }
     }
   }

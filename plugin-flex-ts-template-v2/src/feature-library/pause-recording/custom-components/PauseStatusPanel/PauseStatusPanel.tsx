@@ -13,46 +13,45 @@ export interface OwnProps {
 }
 
 const PauseStatusPanel = (props: OwnProps) => {
+  const [isLive, setIsLive] = useState(false);
   const [paused, setPaused] = useState(false);
 
   const { pausedRecordings } = useSelector(
     (state: AppState) => state[reduxNamespace].pauseRecording as PauseRecordingState,
   );
 
-  const updatePausedState = () => {
-    const isLiveCall = props.task ? TaskHelper.isLiveCall(props.task) : false;
+  const updateState = () => {
+    const liveCall = props.task ? TaskHelper.isLiveCall(props.task) : false;
+    setIsLive(liveCall);
 
-    if (!isLiveCall || !props.task) {
+    if (!liveCall || !props.task) {
       setPaused(false);
       return;
     }
 
-    if (
-      pausedRecordings &&
-      pausedRecordings.find((pausedRecording) => props.task && pausedRecording.reservationSid === props.task.sid)
-    ) {
-      setPaused(true);
-    } else {
-      setPaused(false);
-    }
+    setPaused(!!pausedRecordings?.find((r) => r.reservationSid === props.task?.sid));
   };
 
   useEffect(() => {
-    updatePausedState();
+    updateState();
   }, []);
 
   useEffect(() => {
-    updatePausedState();
+    updateState();
   }, [pausedRecordings, props.task?.sid]);
 
+  if (!isLive) return null;
+
   return (
-    <>
-      {paused && (
-        <Text as="p" textAlign="center" fontWeight="fontWeightBold" padding="space50">
-          <Template source={templates[StringTemplates.RECORDING_PAUSED_LABEL]} />
-        </Text>
-      )}
-    </>
+    <Text
+      as="p"
+      textAlign="center"
+      fontWeight="fontWeightBold"
+      padding="space50"
+      color={paused ? 'colorTextWarningStrong' : 'colorTextSuccess'}
+    >
+      <Template source={templates[paused ? StringTemplates.RECORDING_PAUSED_LABEL : StringTemplates.RECORDING_ACTIVE_LABEL]} />
+    </Text>
   );
 };
 
