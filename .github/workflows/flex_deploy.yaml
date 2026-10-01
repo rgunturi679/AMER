@@ -213,6 +213,7 @@ jobs:
   deploy-release-plugin:
     needs:
       - validate-environment
+      - deploy-packages
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     env:
