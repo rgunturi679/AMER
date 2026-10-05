@@ -53,7 +53,11 @@ const WrapupCountdown = ({ task, channelDefinition }: OwnProps) => {
 
     const taskConfig = getMatchingTaskConfiguration(task);
     if (!taskConfig || !taskConfig.auto_wrapup) {
-      // No auto-wrap for this task; use the default behavior
+      return getDefaultTemplate();
+    }
+
+    const includedQueues = taskConfig.included_queue_sids ?? [];
+    if (includedQueues.length > 0 && !includedQueues.includes(task.queueSid)) {
       return getDefaultTemplate();
     }
 
