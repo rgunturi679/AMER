@@ -15,5 +15,10 @@ export const eventHook = async function setAutoWrapTimeout(flex: typeof Flex, ma
     return;
   }
 
+  const includedQueues = config.included_queue_sids ?? [];
+  if (includedQueues.length > 0 && !includedQueues.includes(task.queueSid)) {
+    return;
+  }
+
   setAutoCompleteTimeout(manager, task, config);
 };

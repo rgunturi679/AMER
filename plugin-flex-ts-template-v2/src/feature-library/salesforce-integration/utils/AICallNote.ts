@@ -27,9 +27,11 @@ const getVendorFields = (attrs: any) => {
 };
 
 export const createAICallCentreNote = (task: ITask) => {
+  logger.log('[salesforce-integration] createAICallCentreNote called', { taskSid: task.taskSid });
+
   const opencti = getOpenCti();
   if (!opencti) {
-    logger.error('[salesforce-integration] OpenCTI not available for AI call note creation');
+    logger.error('[salesforce-integration] createAICallCentreNote: OpenCTI not available');
     return;
   }
 
@@ -44,6 +46,13 @@ export const createAICallCentreNote = (task: ITask) => {
   const localHour = new Date().getHours();
   const utcHour = new Date().getUTCHours();
   const callName = `${direction === 'outbound' ? 'Outgoing' : 'Incoming'} call from ${from} to ${to}`;
+
+  logger.log('[salesforce-integration] createAICallCentreNote: extracted fields', {
+    callSid, direction, from, to, vendor, segmentLink, durationSec, hangUpBy, userId,
+  });
+
+  const vendorFields = getVendorFields(attrs);
+  logger.log('[salesforce-integration] createAICallCentreNote: vendor fields', vendorFields);
 
   const callLog = {
     callSid,
@@ -77,22 +86,25 @@ export const createAICallCentreNote = (task: ITask) => {
     Automated_Voicemail_Used__c: attrs.voicemail ?? false,
     Call_Name__c: callName,
     AI_Vendor__c: vendor,
-    ...getVendorFields(attrs),
+    ...vendorFields,
   };
 
-  logger.log('[salesforce-integration] Creating AI Call_Center_Note__c', record);
+  logger.log('[salesforce-integration] createAICallCentreNote: calling saveLog', record);
 
   opencti.saveLog({
     value: record,
     callback: (result: any) => {
+      logger.log('[salesforce-integration] createAICallCentreNote: saveLog callback', result);
       if (!result.success) {
-        logger.error('[salesforce-integration] Failed to create AI call centre note', result.errors);
+        logger.error('[salesforce-integration] createAICallCentreNote: saveLog failed', result.errors);
         return;
       }
       const recordId = result.returnValue?.id;
-      logger.log('[salesforce-integration] AI Call_Center_Note__c created', recordId);
+      logger.log('[salesforce-integration] createAICallCentreNote: record created, popping', recordId);
       if (recordId) {
         screenPopRecord(recordId);
+      } else {
+        logger.warn('[salesforce-integration] createAICallCentreNote: no recordId in saveLog response', result.returnValue);
       }
     },
   });

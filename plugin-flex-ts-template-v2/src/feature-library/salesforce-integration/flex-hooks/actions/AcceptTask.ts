@@ -11,7 +11,10 @@ export const actionEvent = FlexActionEvent.after;
 export const actionName = FlexAction.AcceptTask;
 export const actionHook = function screenPopAfterAccept(flex: typeof Flex) {
   flex.Actions.addListener(`${actionEvent}${actionName}`, async (payload) => {
+    logger.log('[salesforce-integration] afterAcceptTask fired', { sid: payload.sid, taskSid: payload.task?.taskSid });
+
     if (!getOpenCti()) {
+      logger.warn('[salesforce-integration] afterAcceptTask: OpenCTI not available, skipping');
       return;
     }
 
@@ -24,10 +27,20 @@ export const actionHook = function screenPopAfterAccept(flex: typeof Flex) {
     }
 
     if (!task) {
+      logger.warn('[salesforce-integration] afterAcceptTask: task not found');
       return;
     }
 
+    logger.log('[salesforce-integration] afterAcceptTask: task attributes', {
+      taskSid: task.taskSid,
+      is_call_from_AI: task.attributes.is_call_from_AI,
+      vendor: task.attributes.vendor,
+      direction: task.attributes.direction,
+      isAiCallLoggingEnabled: isAiCallLoggingEnabled(),
+    });
+
     if (isAiCallLoggingEnabled() && task.attributes.is_call_from_AI === 'true') {
+      logger.log('[salesforce-integration] afterAcceptTask: AI call detected, creating Call_Center_Note__c');
       try {
         createAICallCentreNote(task);
       } catch (error: any) {
@@ -37,6 +50,7 @@ export const actionHook = function screenPopAfterAccept(flex: typeof Flex) {
     }
 
     if (!isScreenPopEnabled()) {
+      logger.log('[salesforce-integration] afterAcceptTask: screen pop disabled, skipping');
       return;
     }
 
