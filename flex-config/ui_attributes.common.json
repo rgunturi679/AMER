@@ -215,10 +215,10 @@
       },
       "custom_hold_music": {
         "enabled": true,
-        "default_url": "https://flavescent-viper-9388.twil.io/assets/midnight-walk-mark-dorricott-mp3_XIIVHT8N.mp3",
+        "default_url": "https://test-service-5757.twil.io/hold-music?audioUrl=https%3A%2F%2Fflavescent-viper-9388.twil.io%2Fassets%2Fmidnight-walk-mark-dorricott-mp3_XIIVHT8N.mp3",
         "queue_music": {
-          "WQ9f878356a10749484c96bb62c45007d6": "https://flavescent-viper-9388.twil.io/assets/HoldMusic-NAIteroFrontLine.mp3",
-          "WQ281ec3ef9538eaf431dfbe18ab049999": "https://flavescent-viper-9388.twil.io/assets/HoldMusic-NAIteroFrontLine.mp3"
+          "WQ9f878356a10749484c96bb62c45007d6": "https://test-service-5757.twil.io/hold-music?audioUrl=https%3A%2F%2Fflavescent-viper-9388.twil.io%2Fassets%2FHoldMusic-NAIteroFrontLine.mp3",
+          "WQ281ec3ef9538eaf431dfbe18ab049999": "https://test-service-5757.twil.io/hold-music?audioUrl=https%3A%2F%2Fflavescent-viper-9388.twil.io%2Fassets%2FHoldMusic-NAIteroFrontLine.mp3"
         }
       },
       "custom_transfer_directory": {
