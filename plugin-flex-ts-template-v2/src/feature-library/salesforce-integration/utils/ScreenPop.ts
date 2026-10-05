@@ -80,3 +80,19 @@ export const screenPop = (task: ITask) => {
     },
   });
 };
+
+export const screenPopRecord = (recordId: string) => {
+  const opencti = getOpenCti();
+  if (!opencti || !recordId) {
+    return;
+  }
+  opencti.screenPop({
+    type: opencti.SCREENPOP_TYPE.SOBJECT,
+    params: { recordId },
+    callback: (result: any) => {
+      if (!result.success) {
+        logger.error('[salesforce-integration] Failed to screen pop record', result);
+      }
+    },
+  });
+};

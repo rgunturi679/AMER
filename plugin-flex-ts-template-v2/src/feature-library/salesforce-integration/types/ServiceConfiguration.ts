@@ -1,6 +1,7 @@
 export default interface SalesforceIntegrationConfig {
   enabled: boolean;
   activity_logging: boolean;
+  ai_call_logging: boolean;
   click_to_dial: boolean;
   copilot_notes: boolean;
   hide_crm_container: boolean;

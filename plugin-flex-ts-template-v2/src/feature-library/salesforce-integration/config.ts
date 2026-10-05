@@ -4,6 +4,7 @@ import SalesforceIntegrationConfig from './types/ServiceConfiguration';
 const {
   enabled = false,
   activity_logging = false,
+  ai_call_logging = false,
   click_to_dial = false,
   copilot_notes = false,
   hide_crm_container = false,
@@ -19,6 +20,10 @@ export const isFeatureEnabled = () => {
 
 export const isActivityLoggingEnabled = () => {
   return activity_logging;
+};
+
+export const isAiCallLoggingEnabled = () => {
+  return ai_call_logging;
 };
 
 export const isClickToDialEnabled = () => {
