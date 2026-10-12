@@ -167,18 +167,56 @@
             "auto_accept": true,
             "auto_select": false,
             "auto_wrapup": true,
-            "included_queue_sids": ["WQa9847559139e285b2b4ed53c4df3ca30", "WQ281ec3ef9538eaf431dfbe18ab049999"],
+            "included_queue_sids": [
+              "WQa9847559139e285b2b4ed53c4df3ca30",
+              "WQ281ec3ef9538eaf431dfbe18ab049999",
+              "WQfb2967f590672883712008b4f408c4b2",
+              "WQaa2ba7079a795c47ee349ea47c919320",
+              "WQdd584099a4c2f3349a0fd3373cbccc5b",
+              "WQ0d81a82295b244f6b707d49d7afa042f",
+              "WQ0bc2d79e05067090618be69ac34a8da0",
+              "WQ3604a1e7e9dc3cdc3b162ff408624ad1",
+              "WQb0dfc8222a8341a8811921e1a9dc08f9",
+              "WQ6e914d62667d0560629eebefeff049dc",
+              "WQe25e8cc0efc1d0f3651ec4b2e334ccec",
+              "WQ152ae04510e2a733986036c10233780b",
+              "WQceb6d1350c30d35e860049b5ea786fe9",
+              "WQ72c829014e72bcb57ed1c437fd2ab7af",
+              "WQ27bc6751e8c703e91ff1af889e2a7fca"
+            ],
+            "included_queue_sids_names_for_auto_wraup": {
+              "WQfb2967f590672883712008b4f408c4b2": "Credit Collection",
+              "WQaa2ba7079a795c47ee349ea47c919320": "Credit Collections French",
+              "WQdd584099a4c2f3349a0fd3373cbccc5b": "Credit Collection Retention",
+              "WQ0d81a82295b244f6b707d49d7afa042f": "Credit Collection VIP",
+              "WQ0bc2d79e05067090618be69ac34a8da0": "Credit Collection Corporate",
+              "WQ3604a1e7e9dc3cdc3b162ff408624ad1": "Credit Collection Escalations",
+              "WQb0dfc8222a8341a8811921e1a9dc08f9": "Credit Collection MA",
+              "WQ6e914d62667d0560629eebefeff049dc": "Credit Collection MW",
+              "WQe25e8cc0efc1d0f3651ec4b2e334ccec": "Credit Collection NE",
+              "WQ152ae04510e2a733986036c10233780b": "Credit Collection PNW",
+              "WQceb6d1350c30d35e860049b5ea786fe9": "Credit Collection SE",
+              "WQ72c829014e72bcb57ed1c437fd2ab7af": "Credit Collection W",
+              "WQ27bc6751e8c703e91ff1af889e2a7fca": "Credit & Collection MX",
+              "WQa9847559139e285b2b4ed53c4df3ca30":"OUTBOUND-TEST",
+              "WQ281ec3ef9538eaf431dfbe18ab049999":"AgentDirectLine-gowtham-TEST"
+            },
             "required_attributes": [],
             "required_worker_attributes": [],
             "wrapup_time": 120000,
             "allow_extended_wrapup": false,
             "extended_wrapup_time": 0,
             "default_outcome": "Automatically completed",
-            "excluded_queue_sids": ""
+            "excluded_queue_sids": ["WQ7031fc2084bbe1fe6d9a2fddecac1e87", "WQcab63335ac2e42523ccd6a6339ee151e"],
+            "excluded_queue_names_from_auto_accept": {
+            "WQ7031fc2084bbe1fe6d9a2fddecac1e87":"Service Desk English",
+            "WQcab63335ac2e42523ccd6a6339ee151e":"Service Desk Spanish",
+             "WQ281ec3ef9538eaf431dfbe18ab049999":"AgentDirectLine-gowtham-TEST"
+            }
           },
           {
             "channel": "chat",
-            "auto_accept": true,
+            "auto_accept": false,
             "auto_select": true,
             "auto_wrapup": true,
             "required_attributes": [],
@@ -215,10 +253,10 @@
       },
       "custom_hold_music": {
         "enabled": true,
-        "default_url": "https://test-service-5757.twil.io/hold-music?audioUrl=https%3A%2F%2Fflavescent-viper-9388.twil.io%2Fassets%2Fmidnight-walk-mark-dorricott-mp3_XIIVHT8N.mp3",
+        "default_url": "https://flavescent-viper-9388.twil.io/assets/midnight-walk-mark-dorricott-mp3_XIIVHT8N.mp3",
         "queue_music": {
-          "WQ9f878356a10749484c96bb62c45007d6": "https://test-service-5757.twil.io/hold-music?audioUrl=https%3A%2F%2Fflavescent-viper-9388.twil.io%2Fassets%2FHoldMusic-NAIteroFrontLine.mp3",
-          "WQ281ec3ef9538eaf431dfbe18ab049999": "https://test-service-5757.twil.io/hold-music?audioUrl=https%3A%2F%2Fflavescent-viper-9388.twil.io%2Fassets%2FHoldMusic-NAIteroFrontLine.mp3"
+          "WQ9f878356a10749484c96bb62c45007d6": "https://flavescent-viper-9388.twil.io/assets/HoldMusic-NAIteroFrontLine.mp3",
+          "WQ281ec3ef9538eaf431dfbe18ab049999": "https://flavescent-viper-9388.twil.io/assets/HoldMusic-NAIteroFrontLine.mp3"
         }
       },
       "custom_transfer_directory": {
