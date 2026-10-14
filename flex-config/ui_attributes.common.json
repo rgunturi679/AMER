@@ -46,6 +46,10 @@
             "required_skill": "system_activities",
             "sort_order": 0
           },
+          "System Logout": {
+            "required_skill": "system_activities",
+            "sort_order": 0
+          },
           "Offline": {
             "required_skill": null,
             "sort_order": 100
