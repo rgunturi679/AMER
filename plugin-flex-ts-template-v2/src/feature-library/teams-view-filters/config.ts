@@ -14,6 +14,8 @@ const {
 } = getFeatureFlags().features?.teams_view_filters?.applied_filters || {};
 const { teams = [], departments = [] } = getFeatureFlags().common || {};
 
+console.debug('[teams-view-filters] Config loaded', { enabled, log_filters, applied_filters: { activities, email, department, queue_no_worker_data, queue_worker_data, team, agent_skills } });
+
 export const isFeatureEnabled = () => {
   return enabled;
 };

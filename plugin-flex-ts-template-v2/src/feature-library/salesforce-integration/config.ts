@@ -14,6 +14,8 @@ const {
   utility_bar_status = false,
 } = (getFeatureFlags()?.features?.salesforce_integration as SalesforceIntegrationConfig) || {};
 
+console.debug('[salesforce-integration] Config loaded', { enabled, activity_logging, ai_call_logging, click_to_dial, copilot_notes, hide_crm_container, prevent_popout_during_call, screen_pop, show_panel_automatically, utility_bar_status });
+
 export const isFeatureEnabled = () => {
   return enabled;
 };

@@ -7,6 +7,8 @@ import { matchesAttribute } from '../../utils/helpers';
 const { enabled = false, configuration = [] } =
   (getFeatureFlags()?.features?.agent_automation as AgentAutomationConfig) || {};
 
+console.debug('[agent-automation] Config loaded', { enabled, channels: configuration.map((c: any) => c.channel) });
+
 export const isFeatureEnabled = () => {
   return enabled;
 };

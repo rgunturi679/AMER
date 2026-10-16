@@ -10,6 +10,8 @@ const {
 
 const { channel = 'worker' } = getFeatureFlags()?.features?.dual_channel_recording || {};
 
+console.debug('[pause-recording] Config loaded', { enabled, indicator_permanent, indicator_banner, include_silence });
+
 export const isFeatureEnabled = () => {
   return enabled;
 };

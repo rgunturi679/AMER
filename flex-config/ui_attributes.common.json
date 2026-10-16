@@ -2,7 +2,7 @@
   "custom_data": {
     "serverless_functions_domain": "<YOUR_SERVERLESS_DOMAIN>",
     "common": {
-      "log_level": "info",
+      "log_level": "debug",
       "audit_log_ttl": 1209600,
       "teams": [
         "Blue Team",
@@ -136,7 +136,7 @@
       },
       "teams_view_filters": {
         "enabled": true,
-        "log_filters": false,
+        "log_filters": true,
         "applied_filters": {
           "activities": true,
           "email": true,
@@ -233,8 +233,8 @@
           {
             "channel": "sms",
             "auto_accept": false,
-            "auto_select": false,
-            "auto_wrapup": true,
+            "auto_select": true,
+            "auto_wrapup": false,
             "required_attributes": [],
             "required_worker_attributes": [],
             "wrapup_time": 1,

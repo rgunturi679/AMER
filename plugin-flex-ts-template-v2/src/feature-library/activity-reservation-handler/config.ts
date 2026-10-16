@@ -15,6 +15,8 @@ const {
   },
 } = (getFeatureFlags()?.features?.activity_reservation_handler as ActivityReservationHandlerConfig) || {};
 
+console.debug('[activity-reservation-handler] Config loaded', { enabled, auto_wrapup, wrapup_timeout_ms, system_activity_names });
+
 export const isFeatureEnabled = () => {
   return enabled;
 };

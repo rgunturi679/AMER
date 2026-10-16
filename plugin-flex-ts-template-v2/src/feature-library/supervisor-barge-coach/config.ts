@@ -9,6 +9,8 @@ const {
   supervisor_alert_toggle = false,
 } = (getFeatureFlags()?.features?.supervisor_barge_coach as SupervisorBargeCoachConfig) || {};
 
+console.debug('[supervisor-barge-coach] Config loaded', { enabled, agent_coaching_panel, supervisor_monitor_panel, agent_assistance, supervisor_alert_toggle });
+
 export const isFeatureEnabled = () => {
   return enabled;
 };

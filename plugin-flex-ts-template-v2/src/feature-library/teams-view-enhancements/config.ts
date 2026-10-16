@@ -31,6 +31,8 @@ const {
 
 const { teams = [] } = getFeatureFlags().common || {};
 
+console.debug('[teams-view-enhancements] Config loaded', { enabled, highlight_handle_time, handle_time_warning_threshold, handle_time_exceeded_threshold, columns: { team, department, location, activity_icon } });
+
 export const isFeatureEnabled = () => {
   return enabled;
 };

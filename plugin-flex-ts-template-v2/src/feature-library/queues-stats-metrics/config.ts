@@ -8,6 +8,8 @@ const {
   agent_activity_stats_column = true,
 } = (getFeatureFlags()?.features?.queues_stats_metrics as QueuesStatsConfig) || {};
 
+console.debug('[queues-stats-metrics] Config loaded', { enabled, assigned_tasks_column, wrapping_tasks_column, agent_activity_stats_column });
+
 export const isFeatureEnabled = () => {
   return enabled;
 };

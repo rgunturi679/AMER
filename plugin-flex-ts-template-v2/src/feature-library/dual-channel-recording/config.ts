@@ -8,6 +8,8 @@ const {
   exclude_queues = [],
 } = (getFeatureFlags()?.features?.dual_channel_recording as DualChannelRecordingConfig) || {};
 
+console.debug('[dual-channel-recording] Config loaded', { enabled, channel, exclude_attributes, exclude_queues });
+
 export const isFeatureEnabled = () => {
   return enabled;
 };
