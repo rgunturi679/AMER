@@ -78,12 +78,13 @@ class ActivityManager {
   // when in a reserved system state but want to go unavailable
   // this method uses a semaphore to enforce a single execution
   // at a time.
-  enforceEvaluatedState = async (available?: boolean) => {
+  enforceEvaluatedState = async (available?: boolean, acceptedTaskSid?: string) => {
     return new Promise(async (resolve, reject) => {
       this.currentRequests.push({
         resolve,
         reject,
         available,
+        acceptedTaskSid,
       } as CallbackPromise);
       await this.#tryNext();
     });
@@ -126,9 +127,9 @@ class ActivityManager {
   #tryNext = async () => {
     if (!this.currentRequests.length) {
     } else if (this.runningRequests < this.maxConcurrentRequests) {
-      const { resolve, reject, available } = this.currentRequests.shift() as CallbackPromise;
+      const { resolve, reject, available, acceptedTaskSid } = this.currentRequests.shift() as CallbackPromise;
       this.runningRequests += 1;
-      const req = this.#enforceEvaluatedState(available);
+      const req = this.#enforceEvaluatedState(available, acceptedTaskSid);
       req
         .then((res) => resolve(res))
         .catch((err) => reject(err))
@@ -141,7 +142,7 @@ class ActivityManager {
 
   // performs the algorithm to evaluate whether we should switch Activity and
   // moves them if necessary
-  #enforceEvaluatedState = async (availability?: boolean) => {
+  #enforceEvaluatedState = async (availability?: boolean, acceptedTaskSid?: string) => {
     const { available } = systemActivityNames;
 
     const currentWorkerActivity = await FlexHelper.getWorkerActivity();
@@ -151,7 +152,7 @@ class ActivityManager {
     const acdAvailabilityStatus = availability === undefined ? currentWorkerActivity?.available || false : availability;
 
     // evaluate what the new activity/state should be
-    const newActivity = await this.#evaluateNewState(acdAvailabilityStatus);
+    const newActivity = await this.#evaluateNewState(acdAvailabilityStatus, acceptedTaskSid);
 
     // determine if we need to cache the state we are leaving
     // we only cache non reserved system states and evaluations that would
@@ -174,8 +175,18 @@ class ActivityManager {
   };
 
   // evaluates which state we should be in given an availability status
-  #evaluateNewState = async (newAvailabilityStatus: boolean): Promise<string> => {
+  #evaluateNewState = async (newAvailabilityStatus: boolean, acceptedTaskSid?: string): Promise<string> => {
     const { available, onATask, onATaskNoAcd, wrapup, wrapupNoAcd, extendedWrapup } = systemActivityNames;
+
+    if (acceptedTaskSid) {
+      const reservations = await FlexHelper.getWorkerReservations();
+      const hasOtherPendingTasks = [...reservations.entries()].some(
+        ([reservationSid, reservation]) =>
+          reservationSid !== acceptedTaskSid && reservation.status === FlexHelper.RESERVATION_STATUS.PENDING,
+      );
+      if (hasOtherPendingTasks && newAvailabilityStatus) return FlexHelper.getWorkerActivityName();
+      return newAvailabilityStatus ? onATask : onATaskNoAcd;
+    }
 
     const selectedTaskStatus = FlexHelper.getSelectedTaskStatus();
     const pendingActivity = this.#getPendingActivity();

@@ -8,5 +8,5 @@ export const eventName = FlexEvent.taskAccepted;
 export const eventHook = async (_flex: typeof Flex, _manager: Flex.Manager, task: Flex.ITask) => {
   logger.debug(`[activity-reservation-handler] handle ${eventName} for ${task.sid}`);
 
-  await ActivityManager.enforceEvaluatedState();
+  await ActivityManager.enforceEvaluatedState(undefined, task.sid);
 };

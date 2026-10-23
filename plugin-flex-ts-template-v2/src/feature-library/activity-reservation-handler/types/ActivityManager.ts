@@ -6,4 +6,5 @@ export interface CallbackPromise {
   resolve: any;
   reject: any;
   available?: boolean;
+  acceptedTaskSid?: string;
 }
