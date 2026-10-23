@@ -1,6 +1,6 @@
 import { Actions, Manager } from '@twilio/flex-ui';
 
-import { getSystemActivityNames, isFeatureEnabled } from '../config';
+import { getSystemActivityNames, isFeatureEnabled, shouldUpdateActivityOnTaskAccept } from '../config';
 import { FlexHelper } from '../../../utils/helpers';
 import { CallbackPromise, PendingActivity } from '../types/ActivityManager';
 import { updatePendingActivity } from '../flex-hooks/reducers/ActivityReservationHandler';
@@ -91,13 +91,13 @@ class ActivityManager {
   };
 
   // externally exposed for use in StartOutboundCall
-  setWorkerActivity = async (activityName: string) => {
+  setWorkerActivity = async (activityName: string, rejectPendingReservations = true) => {
     if (activityName === this.#getPendingActivity()?.name) this.#clearPendingActivity();
     await Actions.invokeAction('SetActivity', {
       activityName,
       isInvokedByPlugin: true,
       options: {
-        rejectPendingReservations: true,
+        rejectPendingReservations,
       },
     });
   };
@@ -167,7 +167,10 @@ class ActivityManager {
       this.storePendingActivityChange(currentWorkerActivity?.name || available);
 
     // update the activity/state only if we are not currently in that activity/state.
-    if (newActivity !== currentWorkerActivity?.name) await this.setWorkerActivity(newActivity);
+    if (newActivity !== currentWorkerActivity?.name) {
+      const preservePendingReservations = Boolean(acceptedTaskSid && shouldUpdateActivityOnTaskAccept());
+      await this.setWorkerActivity(newActivity, !preservePendingReservations);
+    }
 
     // if our final activity is not a system activity
     // we have no need for a pending state
@@ -178,13 +181,7 @@ class ActivityManager {
   #evaluateNewState = async (newAvailabilityStatus: boolean, acceptedTaskSid?: string): Promise<string> => {
     const { available, onATask, onATaskNoAcd, wrapup, wrapupNoAcd, extendedWrapup } = systemActivityNames;
 
-    if (acceptedTaskSid) {
-      const reservations = await FlexHelper.getWorkerReservations();
-      const hasOtherPendingTasks = [...reservations.entries()].some(
-        ([reservationSid, reservation]) =>
-          reservationSid !== acceptedTaskSid && reservation.status === FlexHelper.RESERVATION_STATUS.PENDING,
-      );
-      if (hasOtherPendingTasks && newAvailabilityStatus) return FlexHelper.getWorkerActivityName();
+    if (acceptedTaskSid && shouldUpdateActivityOnTaskAccept()) {
       return newAvailabilityStatus ? onATask : onATaskNoAcd;
     }
 

@@ -125,6 +125,7 @@
       },
       "activity_reservation_handler": {
         "enabled": true,
+        "update_activity_on_task_accept": true,
         "system_activity_names": {
           "available": "Available",
           "onATask": "On a Task",

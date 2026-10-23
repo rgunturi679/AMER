@@ -57,6 +57,7 @@ The reason we cannot change the agent's state directly to the correct resolved s
 {
   "activity_reservation_handler": {
     "enabled": false,
+    "update_activity_on_task_accept": false,
     "system_activity_names": {
       "available": "Available",
       "onATask": "On a Task",
@@ -70,6 +71,8 @@ The reason we cannot change the agent's state directly to the correct resolved s
 ```
 
 This feature depends on a configured set of Activities for the different ACD states. After [enabling](/building/template-utilities/configuration#configuration-management) the feature the following configuration is required
+
+Set `update_activity_on_task_accept` to `true` to move an agent to the configured "On a Task" activity as soon as a task is accepted, even if another reservation is pending. The activity update will not automatically reject that pending reservation; if the target activity is offline, Flex may defer the activity change while a reservation remains pending. This setting is enabled in the AMER configuration.
 
 The following are the descriptions of the configuration objects and what they represent 
 
@@ -178,7 +181,5 @@ sequenceDiagram
 
 </TabItem>
 </Tabs>
-
-
 
 
